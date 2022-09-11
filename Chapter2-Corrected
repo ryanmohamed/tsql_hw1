@@ -1,0 +1,291 @@
+/*
+# Select all orders after the year 2015 (12/31/2015)
+
+```
+SELECT orderid, YEAR(orderdate) AS orderyear
+FROM Sales.Orders
+WHERE orderyear > 2015;
+
+```
+*/
+
+use TSQLV4
+
+SELECT orderid, YEAR(orderdate) AS orderyear
+FROM Sales.Orders
+WHERE YEAR(orderdate) > 2015; --corrected
+
+use Northwinds2022TSQLV7
+
+select OrderId as orderid, 
+    YEAR(OrderDate) as orderyear
+from Sales.[Order]
+where YEAR(OrderDate) > 2015 --remember, select comes after these, 5th
+
+/*
+# Get number of orders \> 2 with each employee in each year from customer 71
+
+```
+SELECT empid, YEAR(orderdate) AS orderyear, COUNT(*) AS numorders
+FROM Sales.Orders
+WHERE custid = 71
+GROUP BY empid, YEAR(orderdate)
+HAVING numorders > 1;
+
+```
+*/
+
+use TSQLV4
+
+SELECT empid, YEAR(orderdate) AS orderyear, COUNT(*) AS numorders
+FROM Sales.Orders
+WHERE custid = 71
+GROUP BY empid, YEAR(orderdate)
+HAVING COUNT(*) > 1; --corrected, cannot use alias in step 4, select comes 5th
+
+use Northwinds2022TSQLV7
+
+select EmployeeId as empid, 
+    YEAR(orderdate) as orderyear, 
+    COUNT(*) AS numorders
+from Sales.[Order]
+where CustomerId = 71
+group by EmployeeId, YEAR(orderdate)
+having COUNT(*) > 1
+
+/*
+# Return a table of orderid, orderyear, and nextyear using the columns in Sales Order
+
+```
+SELECT orderid,
+  YEAR(orderdate) AS orderyear,
+  orderyear + 1 AS nextyear
+FROM Sales.Orders;
+```
+*/
+
+use TSQLV4
+
+SELECT orderid,
+  YEAR(orderdate) AS orderyear,
+  YEAR(orderdate) + 1 AS nextyear --alias as alias, recall order of parsing
+FROM Sales.Orders;
+
+use Northwinds2022TSQLV7
+
+select OrderId as orderid, 
+    YEAR(OrderDate) as orderyear,
+    YEAR(OrderDate) + 1 as nextyear
+from Sales.[Order]
+
+/*
+# Select all distinct countries, ordered by employee id.
+
+```
+SELECT DISTINCT country
+FROM HR.Employees
+ORDER BY empid;
+```
+*/
+
+use TSQLV4
+
+SELECT DISTINCT country, empid --correction
+FROM HR.Employees
+ORDER BY empid; 
+--ORDER BY items must appear in the select list
+--if SELECT DISTINCT is specified.
+
+
+
+use Northwinds2022TSQLV7
+
+select distinct EmployeeCountry as country, EmployeeId as empid --correction
+from HumanResources.[Employee]
+order by empid --valid, order by is 6th
+
+/*
+# ALL AT ONCE) Returns all rows of a table, where column 1 / column 2 \> 2 and ensures no division by 0.
+
+```
+SELECT col1, col2
+FROM dbo.T1
+WHERE col1 <> 0 AND col2/col1 > 2;
+```
+*/
+
+use TSQLV4
+
+SELECT empid, custid
+FROM Sales.Orders
+WHERE empid <> 0 AND custid/empid > 2;
+
+use Northwinds2022TSQLV7
+
+select EmployeeId as empid, 
+    CustomerId as custid
+from Sales.[Order]
+where EmployeeId <> 0 and CustomerId/EmployeeId > 2;
+
+/*
+# Another way to avoid what is returned, in this case if the first column has a value of 0, it won't be returned and the execution ends, otherwise a division operation is commited, think else if.
+
+```
+SELECT col1, col2
+FROM dbo.T1
+WHERE
+  CASE
+    WHEN col1 = 0 THEN 'no' -- or 'yes' if row should be returned
+    WHEN col2/col1 > 2 THEN 'yes'
+    ELSE 'no'
+  END = 'yes';
+```
+*/
+
+use TSQLV4
+
+SELECT empid, custid
+FROM Sales.Orders
+WHERE
+  CASE
+    WHEN empid = 0 or empid = 5 THEN 'no' -- or 'yes' if row should be returned
+    WHEN custid/empid > 2 THEN 'yes'
+    ELSE 'no'
+  END = 'yes';
+
+use Northwinds2022TSQLV7
+
+SELECT EmployeeId as empid, 
+    CustomerId as custid
+FROM Sales.[Order]
+WHERE
+  CASE
+    WHEN EmployeeId = 0 or EmployeeId = 5 THEN 'no' -- or 'yes' if row should be returned
+    WHEN CustomerId/EmployeeId > 2 THEN 'yes'
+    ELSE 'no'
+  END = 'yes';
+
+/*
+# Same method without division whatsoever.
+
+```
+SELECT col1, col2
+FROM dbo.T1
+WHERE (col1 > 0 AND col2 > 2*col1) OR (col1 < 0 AND col2 < 2*col1); 
+
+```
+*/
+
+use TSQLV4
+
+SELECT empid, custid
+FROM Sales.Orders
+WHERE (empid > 0 AND custid > 2*empid) OR (empid < 0 AND custid < 2*empid); 
+
+use Northwinds2022TSQLV7
+
+SELECT EmployeeId as empid,
+    CustomerId custid
+FROM Sales.[Order]
+WHERE (EmployeeId > 0 AND CustomerId > 2*EmployeeId) OR (EmployeeId < 0 AND CustomerId < 2*EmployeeId); 
+
+/*
+# Inserts a new row into a table
+
+```
+INSERT INTO dbo.EmployeeCVs( empid, cv )
+  VALUES( @empid, COMPRESS(@cv) );
+```
+*/
+
+use TSQLV4
+
+create table dbo.EmployeeCVs(
+    empid int not null,
+    cv varchar(255)
+)
+
+--correction
+declare @empid int
+set @empid = 23
+
+declare @cv varchar(255)
+set @cv = 'this is my resume!!'
+
+INSERT INTO dbo.EmployeeCVs( empid, cv )
+  VALUES( @empid, COMPRESS(@cv) )
+
+
+use Northwinds2022TSQLV7
+
+create table dbo.EmployeeCV(
+    EmployeeId int not null,
+    EmployeeCV varchar(255)
+)
+
+--correction
+declare @empid int
+set @empid = 23
+
+declare @cv varchar(255)
+set @cv = 'this is my resume!!'
+
+INSERT INTO dbo.EmployeeCV( EmployeeId, EmployeeCV )
+  VALUES( @empid, COMPRESS(@cv) )
+
+/*
+# Gets uncompressed cvs from each empid
+
+```
+SELECT empid, CAST(DECOMPRESS(cv) AS NVARCHAR(MAX)) AS cv
+FROM dbo.EmployeeCVs;
+```
+*/
+
+use TSQLV4
+
+create table dbo.EmployeeCVs(
+    empid int not null,
+    cv nvarchar(max) not null
+)
+
+--correction
+-- declare @empid int
+-- set @empid = 23
+
+-- declare @cv varbinary(max)
+-- set @cv = cast('this is my resume!!' as varbinary(max))
+
+-- INSERT INTO dbo.EmployeeCVs( empid, cv )
+--   VALUES( @empid, COMPRESS(@cv) )-
+
+SELECT empid, CAST(DECOMPRESS(cv) AS NVARCHAR(MAX)) AS cv
+FROM dbo.EmployeeCVs;
+
+/*
+# Updates the table with a new column
+
+```
+UPDATE dbo.T1
+  SET dto = TODATETIMEOFFSET(dt, theoffset);
+```
+*/
+
+use TSQLV4
+
+-- create table dbo.Time2(
+--     dt datetime not null,
+--     dto datetime
+-- )
+
+insert into dbo.Time2(dt)
+values (CAST('20160212 12:00:00.0000000' AS datetime2))
+
+UPDATE dbo.Time2
+  SET dto = TODATETIMEOFFSET(dt, '-05:00');
+
+select * from dbo.Time2
+
+/*
+#
+*/
